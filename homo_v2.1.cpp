@@ -1150,7 +1150,7 @@ int main(int argc, char** argv){
         outName8 = outName1 + "_delta_EFS.nex";
         outName7 = outName1 + "_delta_Bowker.nex";
         outName6 = outName1 + "_p-distances.nex";
-        outName5 = outName1 + "_Benjamini-Yekutieli.csv";
+        outName5 = outName1 + "_Benja-Yekut.csv";
         outName4 = outName1 + "_Holm.csv";
         outName3 = outName1 + "_Bonferroni.csv";
         outName2 = outName1 + "_P-values.csv";
@@ -1250,7 +1250,7 @@ int main(int argc, char** argv){
             default: outfile1 << "Recoded amino acids (AGPST|DENQ|HKR|MIVL|WFY|C) [D6]" << endl; break;
         }
         outfile1 << "Sequences," << taxon.size() << endl << endl;
-        outfile1 << "Taxon1,Taxon2,Sites,Bowker,df,P_obs,Rank,P_exp,P_Bonferroni,Test,P_Holm,Test,P_Benjamini_Yekutieli,Test,d_Bowker,d_EuclideanFS,d_Euclidean_MS,p_distance" << endl;
+        outfile1 << "Taxon1,Taxon2,Sites,Bowker,df,P_obs,Rank,P_exp,P_Bonferroni,Test,P_Holm,Test,P_Benjamini_Yekutieli,Test,d_Bowker,d_Euclidean_FS,d_Euclidean_MS,p_distance" << endl;
         cout << endl;
     }
     total = taxon.size() * (taxon.size() - 1)/2;
@@ -1679,32 +1679,32 @@ int main(int argc, char** argv){
         cout << "--------------------------------------------------------------------" << endl;
         cout << "   SUMMARY OF ANALYSIS WITH HOMO 2.1" << endl;
         cout << endl;
-        cout << "   Table - all estimates ............................... " << outName1 << endl;
-        cout << "   Matrix - estimates of P values (Bowker 1948) ........ " << outName2 << endl;
-        cout << "   Matrix - test results (Bonferroni 1936) ............. " << outName3 << endl;
-        cout << "   Matrix - test results (Holm 1979) ................... " << outName4 << endl;
-        cout << "   Matrix - test results (Benjamini & Yekutieli 2001) .. " << outName5 << endl;
-        cout << "   Matrix - p distances ................................ " << outName6 << endl;
-        cout << "   Matrix - estimates of d_Bowker ...................... " << outName7 << endl;
-        cout << "   Matrix - estimates of d_Euclidean (Full Sym.) ....... " << outName8 << endl;
-        cout << "   Matrix - estimates of d_Euclidean (Mar. Sym.) ....... " << outName9 << endl;
+        cout << "   All estimates ................................ " << outName1 << endl;
+        cout << "   Estimates of P values (Bowker 1948) .......... " << outName2 << endl;
+        cout << "   Test results (Bonferroni 1936) ............... " << outName3 << endl;
+        cout << "   Test results (Holm 1979) ..................... " << outName4 << endl;
+        cout << "   Test results (Benjamini & Yekutieli 2001) .... " << outName5 << endl;
+        cout << "   p distances .................................. " << outName6 << endl;
+        cout << "   Estimates of d_Bowker ........................ " << outName7 << endl;
+        cout << "   Estimates of d_Euclidean (Full Sym.) ......... " << outName8 << endl;
+        cout << "   Estimates of d_Euclidean (Mar. Sym.) ......... " << outName9 << endl;
         cout << endl;
-        cout << "   Positions in alignment .............................. " << length.size() << endl;
-        cout << "   Number of tests ..................................... " << counter << endl;
-        cout << "   Smallest P value .................................... " << scientific << min_Prob << endl;
-        cout << "   Level of significance (tau) ......................... " << fixed << (double) threshold << endl;
-        cout << "   Proportion of P values below tau .................... " << fixed << (double)below_Tau/total << endl;
-        cout << "   Tests rejected (Bonferroni 1936) .................... " << fixed << rejectBonf << endl;
-        cout << "   Tests rejected (Holm 1979) .......................... " << fixed << rejectHolm << endl;
-        cout << "   Tests rejected (Benjamini & Yekutieli 2001) ......... " << fixed << rejectBenYek << endl;
-        cout << "   Min(delta_Bowker) ................................... " << fixed << min_delta_B << endl;
-        cout << "   Max(delta_Bowker) ................................... " << fixed << max_delta_B << endl;
-        cout << "   Min(delta_EuclideanFS) .............................. " << fixed << min_delta_EuclFS << endl;
-        cout << "   Max(delta_EuclideanFS) .............................. " << fixed << max_delta_EuclFS << endl;
-        cout << "   Min(delta_EuclideanMS) .............................. " << fixed << min_delta_EuclMS << endl;
-        cout << "   Max(delta_EuclideanMS) .............................. " << fixed << max_delta_EuclMS << endl;
-        cout << "   Min(p distance) ..................................... " << fixed << min_p_Dist << endl;
-        cout << "   Max(p distance) ..................................... " << fixed << max_p_Dist << endl;
+        cout << "   Positions in alignment ....................... " << length.size() << endl;
+        cout << "   Number of tests .............................. " << total << endl;
+        cout << "   Smallest P value ............................. " << scientific << min_Prob << endl;
+        cout << "   Level of significance (tau) .................. " << fixed << (double) threshold << endl;
+        cout << "   Proportion of P values below tau ............. " << fixed << (double)below_Tau/total << endl;
+        cout << "   Tests rejected (Bonferroni 1936) ............. " << fixed << rejectBonf << endl;
+        cout << "   Tests rejected (Holm 1979) ................... " << fixed << rejectHolm << endl;
+        cout << "   Tests rejected (Benjamini & Yekutieli 2001) .. " << fixed << rejectBenYek << endl;
+        cout << "   Min(delta_Bowker) ............................ " << fixed << min_delta_B << endl;
+        cout << "   Max(delta_Bowker) ............................ " << fixed << max_delta_B << endl;
+        cout << "   Min(delta_EuclideanFS) ....................... " << fixed << min_delta_EuclFS << endl;
+        cout << "   Max(delta_EuclideanFS) ....................... " << fixed << max_delta_EuclFS << endl;
+        cout << "   Min(delta_EuclideanMS) ....................... " << fixed << min_delta_EuclMS << endl;
+        cout << "   Max(delta_EuclideanMS) ....................... " << fixed << max_delta_EuclMS << endl;
+        cout << "   Min(p distance) .............................. " << fixed << min_p_Dist << endl;
+        cout << "   Max(p distance) .............................. " << fixed << max_p_Dist << endl;
         
         if (rejectBonf > 0 || rejectHolm > 0 || rejectBenYek > 0) {
             cout << endl;
