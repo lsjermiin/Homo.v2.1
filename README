@@ -32,7 +32,7 @@ FORMAT      Sequences must be stored in the FASTA format.
 DATA TYPES  Sequences can be read as strings of singles, pairs or triplets of nucleotides, 
             as strings of 10- or 14-state genotypes, or as strings of amino acids.
 
-COMPILE     g++ homo_2.1.cpp -o homo -O3 -Wall -lm
+COMPILE     g++ homo_2.1.cpp -o homo -O2 -Wall -lm
 
 HELP        Simply type homo in the command line
 
@@ -40,6 +40,6 @@ STATUS      Software complete
 
 NOTE        Contact author for updates, etc
 
-CITATION    Jermiin L.S., Jayaswal V., Misof B., Ott M., Robinson J. 2022.
+CITATION    Jermiin L.S., Jayaswal V., Ott M., Robinson J. 2022.
             On making sense of multiple P values from matched-pairs tests of homogeneity
             for pairs of homologous sequences. (in prep).
