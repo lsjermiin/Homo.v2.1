@@ -20,9 +20,9 @@
 //
 // Date begun         : 14 April, 2019
 //
-// Date modified      : 25 March, 2022
+// Date modified      : 19 February, 2023
 //
-// Copyright          : Copyright © 2019-22 Lars Sommer Jermiin.
+// Copyright          : Copyright © 2019-23 Lars Sommer Jermiin.
 //                      All rights reserved.
 //
 // Responsibility     : The copyright holder takes no legal responsibility for
@@ -140,6 +140,13 @@
 //                      Major redesign of the main function to include methods to
 //                      control the family-wise error rate (FWER) as well as the
 //                      false discovery rate (FDR)
+//
+//                      8 Feb 2023
+//                      Added sequence names associated with max(p) and min(P) to
+//                      output (Brief [B])
+//
+//                      19 Feb 2023
+//                      Count and report the number of variant sites 
 /////////////////////////////////////////////////////////////////////////////////
 
 #include <cctype>
@@ -1024,6 +1031,7 @@ int main(int argc, char** argv){
     unsigned long dm[max_array][max_array]; // 2D divergence matrix
     unsigned long sum_dm(0);       // Sum of elements in divergence matrix
     unsigned long sum_diag_dm(0);  // Sum of diagonal elements in divergence matrix
+    unsigned long max_var(0);      // Maximum sum of off-diagonal elements in divergence matrix
     unsigned long rejectBonf(0);   // Rejected tests (Bonferroni 1936)
     unsigned long rejectHolm(0);   // Rejected tests (Holm 1979)
     unsigned long rejectBenYek(0); // Rejected tests (Benjamini & Yekutieli 2001)
@@ -1079,14 +1087,16 @@ int main(int argc, char** argv){
     vector<vector<unsigned> > mat_Holm;       // Matrix holding 0 or 1 (fail or accept)
     vector<vector<unsigned> > mat_BenYek;     // Matrix holding 0 or 1 (fail or accept)
     vector<vector<unsigned> > mat_df;    // Matrix holding degrees of freedom
-    vector<vector<unsigned long> > mat_sites; // Matrix holding number of sites
+    vector<vector<unsigned long> > mat_Sites; // Matrix holding number of sites
+    vector<vector<unsigned long> > mat_Var_Sites; // Matrix holding number of variant sites
     string name_1, name_2; // temporary variables holding names of two sequences
+    string name_X, name_Y; // temporary variables holding names of two sequences
     string survey, str;
     string inName, outName1, outName2, outName3, outName4, outName5, outName6, outName7, outName8, outName9;
     ofstream outfile1, outfile2, outfile3, outfile4, outfile5, outfile6, outfile7, outfile8, outfile9;
     
     if(argc != 5) {
-        cerr << "\nHomo v" << VERSION << " Copyright 2019-22, Lars Jermiin" << endl;
+        cerr << "\nHomo v" << VERSION << " Copyright 2019-23, Lars Jermiin" << endl;
         cerr << " Contact: lars.jermiin [at] anu.edu.au / ucd.ie" << endl;
         cerr << "\nERROR -- use command: homo <infile> <b|f> <1|...|31> <error rate>\n" << endl;
         cerr << "  infile   Fasta-formatted alignment" << endl;
@@ -1199,7 +1209,7 @@ int main(int argc, char** argv){
     }
     for (vector<vector<int> >::size_type i = 0; i != taxon.size(); i++) {
         mat_df.push_back(row_of_unsigned); // Matrix of degrees of freedom
-        mat_sites.push_back(row_of_unsigned_long); // Matrix of sites compared
+        mat_Sites.push_back(row_of_unsigned_long); // Matrix of sites compared
         mat_Bowker.push_back(row_of_double); // Matrix of Bowker's test statistic
     }
     mat_Prob = mat_Bowker; // Matrix of probabilities
@@ -1210,6 +1220,7 @@ int main(int argc, char** argv){
     mat_Bonferroni = mat_df;
     mat_Holm = mat_df;
     mat_BenYek = mat_df;
+    mat_Var_Sites = mat_Sites;
     if (toupper(survey[0]) == 'F') {
         outfile1.open(outName1.c_str());
         outfile1 << "Program, Homo" << endl;
@@ -1250,7 +1261,7 @@ int main(int argc, char** argv){
             default: outfile1 << "Recoded amino acids (AGPST|DENQ|HKR|MIVL|WFY|C) [D6]" << endl; break;
         }
         outfile1 << "Sequences," << taxon.size() << endl << endl;
-        outfile1 << "Taxon1,Taxon2,Sites,Bowker,df,P_obs,Rank,P_exp,P_Bonferroni,Test,P_Holm,Test,P_Benjamini_Yekutieli,Test,d_Bowker,d_Euclidean_FS,d_Euclidean_MS,p_distance" << endl;
+        outfile1 << "Taxon1,Taxon2,Sites,Var_Sites,Bowker,df,P_obs,Rank,P_exp,P_Bonferroni,Test,P_Holm,Test,P_Benjamini_Yekutieli,Test,d_Bowker,d_Euclidean_FS,d_Euclidean_MS,p_distance" << endl;
         cout << endl;
     }
     total = taxon.size() * (taxon.size() - 1)/2;
@@ -1276,9 +1287,9 @@ int main(int argc, char** argv){
                     sum_dm += dm[m][n];
                 }
             }
-            // Storing the number of sites compared for later use
-            mat_sites[iter1][iter2] = sum_dm;
-            mat_sites[iter2][iter1] = sum_dm;
+            // Storing the number of sites compared, for later use
+            mat_Sites[iter1][iter2] = sum_dm;
+            mat_Sites[iter2][iter1] = sum_dm;
 
             // Compute the sum of diagonal elements in the divergence matrix
             sum_diag_dm = 0;
@@ -1287,17 +1298,27 @@ int main(int argc, char** argv){
             }
             // Compute the p-distance
             p_Distance = (double)(sum_dm - sum_diag_dm)/(double)sum_dm;
-            // Record the largest and smallest p-distance
-            if (p_Distance > max_p_Dist) {
-                max_p_Dist = p_Distance;
-            };
-            if (p_Distance < min_p_Dist) {
-                min_p_Dist = p_Distance;
-            };
             // Store p-distance in matrix for later use
             mat_pDist[iter1][iter2] = p_Distance;
             mat_pDist[iter2][iter1] = p_Distance;
-
+            // Find most divergent pair
+            if (p_Distance > max_p_Dist) {
+                max_p_Dist = p_Distance;
+                name_X = taxon[iter1];
+                name_Y = taxon[iter2];
+            };
+            // Record the smallest p-distance
+            if (p_Distance < min_p_Dist) {
+                min_p_Dist = p_Distance;
+            };
+            // Storing the number of variant sites for a pair, for later use
+            mat_Var_Sites[iter1][iter2] = sum_dm - sum_diag_dm;
+            mat_Var_Sites[iter2][iter1] = sum_dm - sum_diag_dm;
+            // Record largest number of variant sites
+            if(max_var < (sum_dm - sum_diag_dm)) {
+               max_var = sum_dm - sum_diag_dm;
+            }
+            
             // Compute the test statistic and degrees of freedom for Bowker's (1948) test
             BMPTS = 0.0;
             df = 0;
@@ -1321,6 +1342,9 @@ int main(int argc, char** argv){
             } else {
                 P_value = xChi_Square_Distribution_Tail(BMPTS, df);
             }
+            // Store probability in matrix for later use
+            mat_Prob[iter1][iter2] = P_value;
+            mat_Prob[iter2][iter1] = P_value;
             // Count the number of P values below threshold
             if (P_value < threshold) {
                 ++below_Tau;
@@ -1331,9 +1355,6 @@ int main(int argc, char** argv){
                 name_1 = taxon[iter1];
                 name_2 = taxon[iter2];
             }
-            // Store probability in matrix for later use
-            mat_Prob[iter1][iter2] = P_value;
-            mat_Prob[iter2][iter1] = P_value;
             // Create vector of P values for sorting and creating a rank
             P_Bowker.push_back(P_value);
             
@@ -1416,9 +1437,11 @@ int main(int argc, char** argv){
             if (d_EuclideanMS < min_delta_EuclMS) {
                 min_delta_EuclMS = d_EuclideanMS;
             }
-            // Report to terminal how much computation is left
-            cout << "\rNumber of comparisons left = " << --counter;
-            fflush(NULL);
+            // If full survey, report to terminal how much computation is left
+            if (toupper(survey[0]) == 'F') {
+                cout << "\rNumber of comparisons left = " << --counter;
+                fflush(NULL);
+            }
         }
     }
 
@@ -1428,6 +1451,9 @@ int main(int argc, char** argv){
         rank.push_back(i+1);
     }
     // Sorting of order_P according to P_values
+    if (toupper(survey[0]) == 'F') {
+        cout << "\n\nSorting results ..." << endl;
+    }
     for (size_t i = 0; i < total - 1; i++) {
         for (size_t j = i + 1; j < total; j++) {
             // Swap P_values and order_P values
@@ -1505,18 +1531,21 @@ int main(int argc, char** argv){
     // Printing output to terminal and files
     if (toupper(survey[0]) == 'B') {
         // Printing brief summary to terminal
-        cout << "\n\nFile,Sequences,Sites,threshold,Tests,P_min,Bonferroni,Holm,Benjamini_Yekutieli" << endl;
+        cout << "\nFile,Sequences,Sites,Var_Sites,Threshold,Tests,P_min,Bonferroni,Holm,Benjamini_Yekutieli,Pair(max(p)),Pair(min(P))" << endl;
         cout << inName << ",";
         cout << taxon.size() << ",";
         cout << length.size() << ",";
+        cout << max_var << ",";
         cout << threshold << ",";
         cout << total << ",";
         cout << scientific << min_Prob << ",";
         cout << fixed << rejectBonf << ",";
         cout << fixed << rejectHolm << ",";
-        cout << fixed << rejectBenYek << endl;
-//        cout << "Offenders " << name_1 << " vs " << name_2 << std::endl;
+        cout << fixed << rejectBenYek << ",";
+        cout << name_X << " vs " << name_Y << ",";
+        cout << name_1 << " vs " << name_2 << endl;
     } else {
+        cout << "\nPrinting output files ..." << endl;
         size_t i(0);
         // Printing full summary to files
         for (vector<vector<int> >::size_type iter1 = 0; iter1 != alignment.size(); iter1++) {
@@ -1524,7 +1553,8 @@ int main(int argc, char** argv){
                 if (iter1 < iter2) {
                     outfile1 << taxon[iter1] << ",";
                     outfile1 << taxon[iter2] << ",";
-                    outfile1 << mat_sites[iter1][iter2] << ",";
+                    outfile1 << mat_Sites[iter1][iter2] << ",";
+                    outfile1 << mat_Var_Sites[iter1][iter2] << ",";
                     outfile1 << mat_Bowker[iter1][iter2] << ",";
                     outfile1 << mat_df[iter1][iter2] << ",";
                     outfile1 << mat_Prob[iter1][iter2] << ",";

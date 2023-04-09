@@ -4,7 +4,7 @@ NAME        Homo
 
 VERSION     2.1
 
-COPYRIGHT   Copyright © 2019-2022 Lars Sommer Jermiin. All rights reserved.
+COPYRIGHT   Copyright © 2019-2023 Lars Sommer Jermiin. All rights reserved.
 
 WARNING     The copyright holder takes no legal responsibility for the correctness of 
             results obtained using this program.
@@ -19,7 +19,7 @@ CONTACT     lars.jermiin@anu.edu.au
 
 DATE        4 November 2019
 
-UPDATE      25 March 2022
+UPDATE      19 February 2023
 
 PURPOSE     Homo conducts the matched-pairs test of symmetry for pairs of sequences of
             nucleotides, di-nucleotides, codons, genotypes and amino acids.
@@ -32,7 +32,7 @@ FORMAT      Sequences must be stored in the FASTA format.
 DATA TYPES  Sequences can be read as strings of singles, pairs or triplets of nucleotides, 
             as strings of 10- or 14-state genotypes, or as strings of amino acids.
 
-COMPILE     g++ homo_2.1.cpp -o homo -O3 -Wall -lm
+COMPILE     g++ homo_v2.1.cpp -o homo -O3 -Wall -lm
 
 HELP        Simply type homo in the command line
 
